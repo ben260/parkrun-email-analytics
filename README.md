@@ -25,3 +25,8 @@ The CSV columns are: `date`, `event`, `event_number`, `time`, `total_parkruns`, 
 
 ## Analysis
 Open `parkrun-analytics.ipynb` in Jupyter or Google Colab and upload `parkrun-results.csv` alongside it to explore the results with pandas.
+
+## To do
+- Skip parkrun emails that aren't results, such as account preference updates
+- Handle weeks with no run, so nothing is appended when there's no results email
+- Avoid duplicate rows when the workflow is run more than once in a week
