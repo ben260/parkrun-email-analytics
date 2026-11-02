@@ -1,0 +1,333 @@
+{
+  "name": "Parkrun Email Analytics",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -112
+      ],
+      "id": "cb24d39e-03c4-4f69-a692-0ef7c02da139",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "options": {
+          "fileName": "parkrun-results.csv",
+          "headerRow": true
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.2,
+      "position": [
+        1248,
+        80
+      ],
+      "id": "d66ef1da-d978-498e-a4cb-ef213b39f004",
+      "name": "Convert to File1"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "/home/node/.n8n-files/parkrun-results.csv",
+        "options": {
+          "append": false
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        1472,
+        80
+      ],
+      "id": "cc524511-6dea-426f-a5b2-77666acf54e1",
+      "name": "Read/Write Files from Disk1"
+    },
+    {
+      "parameters": {
+        "fileSelector": "/home/node/.n8n-files/parkrun-results.csv",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        -64
+      ],
+      "id": "661f3877-0f65-4c76-a317-43e2dddf9ecc",
+      "name": "Read/Write Files from Disk2"
+    },
+    {
+      "parameters": {
+        "options": {
+          "enableBOM": true,
+          "headerRow": true
+        }
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.2,
+      "position": [
+        512,
+        -64
+      ],
+      "id": "090a1a1e-c4ed-4c0f-ad80-1225cf833fc9",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1024,
+        80
+      ],
+      "id": "86d7a6aa-a539-46d8-ad14-9ada66c38147",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                6
+              ],
+              "triggerAtHour": 14
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        288
+      ],
+      "id": "abe424fa-0f24-4ab2-bf39-9a48b2b84322",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "text": "={{ \"Subject: \" + $json.subject + \"\\n\\nEmail body:\\n\" + $json.text }}",
+        "schemaType": "fromJson",
+        "jsonSchemaExample": "\n{\n  \"date\": \"2026-10-31\",\n  \"event\": \"Nobles parkrun\",\n  \"event_number\": 400,\n  \"time\": \"00:35:44\",\n  \"total_parkruns\": 24,\n  \"event_parkruns\": 10,\n  \"position\": 198,\n  \"field_size\": 307,\n  \"gender_position\": 116,\n  \"age_category\": \"SM25-29\",\n  \"age_category_position\": 3,\n  \"event_pb\": \"00:29:49\",\n  \"year_best\": \"00:32:01\",\n  \"age_grade\": 36.10\n}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        448,
+        240
+      ],
+      "id": "72a26400-5bc0-402c-a09f-187e5da22039",
+      "name": "Information Extractor"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-6-luna",
+          "mode": "list",
+          "cachedResultName": "gpt-6-luna"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        520,
+        456
+      ],
+      "id": "87578ab3-649c-4a0f-9741-0f54e14db3b3",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "s5zfR7vLQB1bzoUr",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        800,
+        240
+      ],
+      "id": "8ffbbf8c-0b98-4eb1-baf2-89ff9a65e80a",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 1,
+        "simple": false,
+        "filters": {
+          "receivedAfter": "={{ $now.minus({ days: 7 }).toISO() }}",
+          "sender": "noreply@parkrun.com"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        240
+      ],
+      "id": "d62bfcd4-5584-4e12-9951-0723de29ad93",
+      "name": "Get many messages",
+      "webhookId": "54187ce5-3858-42cb-9e1c-735234d80548",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Uxpb6f1b5kj8aVRn",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get many messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File1": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk2": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Convert to File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get many messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Information Extractor": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Get many messages": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "e787889d-71fe-4a58-9349-5043bc58a63e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bba7dd25b03dade6e7a374eb42c550ca40bdf6e66cec75d09ec8729664086323"
+  },
+  "nodeGroups": [],
+  "id": "Rg4DzXCDbGXbowgm",
+  "tags": []
+}

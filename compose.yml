@@ -1,0 +1,13 @@
+services:
+  n8n:
+    image: docker.io/n8nio/n8n:2.45.7
+    restart: unless-stopped
+    ports:
+      - '5678:5678'
+    env_file: .env
+    volumes:
+      - n8n-data:/home/node/.n8n
+      - ./data/parkrun-results.csv:/home/node/.n8n-files/parkrun-results.csv
+
+volumes:
+  n8n-data:
